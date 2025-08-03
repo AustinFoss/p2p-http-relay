@@ -30,10 +30,8 @@ type ServicesConfig struct {
 
 // LoadServicesConfig loads the services configuration from a TOML file
 func LoadServicesConfig(configPath string) (*ServicesConfig, error) {
-	// Load .env file if it exists
-	if err := loadEnvFile(); err != nil {
-		log.Printf("Warning: failed to load .env file: %v", err)
-	}
+	// Load .env file if it exists (optional)
+	loadEnvFile() // Don't fail if .env doesn't exist
 
 	config := &ServicesConfig{}
 
@@ -57,11 +55,11 @@ func LoadServicesConfig(configPath string) (*ServicesConfig, error) {
 }
 
 // loadEnvFile loads environment variables from .env file if it exists
-func loadEnvFile() error {
+func loadEnvFile() {
 	// Try to load .env file from current directory first
 	if err := godotenv.Load(); err == nil {
 		log.Println("Loaded environment variables from .env file")
-		return nil
+		return
 	}
 
 	// Try to load from user's config directory
@@ -70,12 +68,12 @@ func loadEnvFile() error {
 		envPath := filepath.Join(homeDir, ".p2p-http-relay", ".env")
 		if err := godotenv.Load(envPath); err == nil {
 			log.Printf("Loaded environment variables from %s", envPath)
-			return nil
+			return
 		}
 	}
 
-	// If no .env file found, that's okay
-	return fmt.Errorf("no .env file found")
+	// If no .env file found, that's okay - just log it
+	log.Println("No .env file found, using system environment variables only")
 }
 
 // processEnvironmentVars replaces environment variable placeholders in paths
@@ -84,13 +82,24 @@ func (sc *ServicesConfig) processEnvironmentVars() error {
 		if len(service.EnvVars) > 0 {
 			// Process path for environment variables
 			processedPath := service.Path
+			hasUnsetVars := false
+
 			for placeholder, envVar := range service.EnvVars {
 				envValue := os.Getenv(envVar)
 				if envValue == "" {
-					return fmt.Errorf("environment variable %s is required for service %s but not set", envVar, serviceName)
+					log.Printf("Warning: environment variable %s is not set for service %s, disabling this service", envVar, serviceName)
+					hasUnsetVars = true
+					break
 				}
 				placeholderStr := "{" + placeholder + "}"
 				processedPath = strings.ReplaceAll(processedPath, placeholderStr, envValue)
+			}
+
+			if hasUnsetVars {
+				// Disable the service if environment variables are missing
+				service.Enabled = false
+				sc.Services[serviceName] = service
+				continue
 			}
 
 			// Update the service with processed path
