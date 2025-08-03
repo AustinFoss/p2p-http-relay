@@ -1,2 +1,4 @@
 tmp
 .env
+config.toml
+dist/

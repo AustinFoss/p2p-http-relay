@@ -1,0 +1,13 @@
+[services]
+
+  [services.json-http-rpc]
+    enabled = true
+    host_prefix = "json-http-rpc"
+    scheme = "https"
+    host = "something.com"
+    path = "/v0/{API_KEY}"
+    user_agent = "MyLibp2pProxy/1.0"
+    allowed_headers = ["Content-Type", "Content-Length", "Accept", "User-Agent"]
+    env_vars = { API_KEY = "API_KEY" }
+
+# Add more services here

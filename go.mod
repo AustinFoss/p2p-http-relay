@@ -1,5 +1,4 @@
-module p2phttp-server
-
+module p2p-http-relay
 go 1.24.1
 
 require (
@@ -12,6 +11,7 @@ require (
 replace github.com/libp2p/go-libp2p => github.com/AustinFoss/go-libp2p v0.0.4
 
 require (
+	github.com/BurntSushi/toml v1.5.0 // indirect
 	github.com/benbjohnson/clock v1.3.5 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
