@@ -21,6 +21,7 @@ type ServiceConfig struct {
 	UserAgent      string            `toml:"user_agent"`
 	AllowedHeaders []string          `toml:"allowed_headers"`
 	EnvVars        map[string]string `toml:"env_vars,omitempty"`
+  BypassAuthPaths []string `toml:"bypass_auth_paths"` // Changed from bool to string slice
 }
 
 // ServicesConfig represents the entire services configuration
