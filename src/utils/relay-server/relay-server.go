@@ -161,34 +161,6 @@ func NewP2pHttpMux(peerID string, configPath string) *http.ServeMux {
 
 			http.NotFound(w, r)
 	})
-// 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-// 		dump, err := httputil.DumpRequest(r, true)
-// 		if err != nil {
-// 			log.Printf("Error dumping request: %v", err)
-// 		} else {
-// 			log.Printf("Full HTTP request:\n%s", dump)
-// 		}
-//
-// 		if proxyAuth := r.Header.Get("Proxy-Authorization"); proxyAuth != "" {
-// 				if strings.HasPrefix(strings.ToLower(proxyAuth), "bearer ") {
-// 						log.Printf("Bearer token detected in Proxy-Authorization header for request to %s", r.Host)
-// 				}
-// 		}
-//
-// 		host := r.Host // e.g., eth-rpc.<peerId>.libp2p
-//
-// 		// Find matching service based on host prefix
-// 		for serviceName, proxyService := range proxyServices {
-// 			hostPrefix := proxyService.Config.HostPrefix
-// 			if strings.HasPrefix(host, hostPrefix+".") && strings.HasSuffix(host, ".libp2p") {
-// 				log.Printf("Routing request to service: %s", serviceName)
-// 				proxyService.Proxy.ServeHTTP(w, r)
-// 				return
-// 			}
-// 		}
-//
-// 		http.NotFound(w, r)
-// 	})
 
 	// Well-known endpoint for service discovery
 	mux.HandleFunc("/.well-known/libp2p/protocols", func(w http.ResponseWriter, r *http.Request) {
@@ -228,6 +200,8 @@ func createProxyFromConfig(serviceConfig config.ServiceConfig) (*httputil.Revers
 		if targetURL.Path != "" {
 			req.URL.Path = targetURL.Path
 		}
+		// Remove Proxy-Authorization header before forwarding
+		req.Header.Del("Proxy-Authorization")
 
 		// Filter headers based on allowed headers
 		allowedHeaders := make(map[string]bool)
